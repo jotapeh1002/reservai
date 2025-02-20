@@ -6,3 +6,169 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum Available {
+  disponivel
+  reservada
+}
+
+enum DaysWeek {
+  domingo
+  segunda
+  terca
+  quarta
+  quinta
+  sexta
+  sabado
+}
+
+enum PayMethod {
+  dinheiro
+  debito
+  credito
+  pix
+}
+
+model UserClient {
+  id         String           @id @default(uuid())
+  name       String           @unique
+  email      String           @unique
+  password   String
+  phone      String?
+  photo      String?
+  created_at DateTime         @default(now())
+  favorite   Favorite[]
+  review     Review[]
+  reserve    Reserve[]
+  available  available[]
+  reviews    ReviewResponse[]
+
+  @@map("userclient")
+}
+
+model Review {
+  id            String           @id @default(uuid())
+  user_id       String
+  user          UserClient?      @relation(fields: [user_id], references: [id])
+  restaurant_id String
+  restaurant    Restaurant       @relation(fields: [restaurant_id], references: [id])
+  comments      String
+  likes         Int              @default(0)
+  dislikes      Int              @default(0)
+  created_at    DateTime         @default(now())
+  reviews       ReviewResponse[]
+
+  @@map("review")
+}
+
+model ReviewResponse {
+  id            String      @id @default(uuid())
+  review_id     String
+  review        Review      @relation(fields: [review_id], references: [id])
+  user_id       String
+  user          UserClient? @relation(fields: [user_id], references: [id])
+  restaurant_id String
+  restaurant    Restaurant  @relation(fields: [restaurant_id], references: [id])
+  comments      String
+  likes         Int         @default(0)
+  dislikes      Int         @default(0)
+  created_at    DateTime    @default(now())
+
+  @@map("reviewresponse")
+}
+
+model Favorite {
+  id            String      @id @default(uuid())
+  user_id       String?
+  user          UserClient? @relation(fields: [user_id], references: [id])
+  restaurant_id String?
+  restaurant    Restaurant? @relation(fields: [restaurant_id], references: [id])
+  created_at    DateTime    @default(now())
+
+  @@map("favorite")
+}
+
+model available {
+  id            String      @id @default(uuid())
+  user_id       String
+  user          UserClient? @relation(fields: [user_id], references: [id])
+  restaurant_id String?
+  restaurant    Restaurant? @relation(fields: [restaurant_id], references: [id])
+  available     Int         @default(0)
+
+  @@map("available")
+}
+
+model table {
+  id             String      @id @default(uuid())
+  id_restaurant  String?
+  restaurant     Restaurant? @relation(fields: [id_restaurant], references: [id])
+  quantities     Int
+  status_reserve Available
+  reserve        Reserve[]
+
+  @@map("table")
+}
+
+model Reserve {
+  id            String      @id @default(uuid())
+  table_id      String?
+  table         table?      @relation(fields: [table_id], references: [id])
+  user_id       String?
+  user          UserClient? @relation(fields: [user_id], references: [id])
+  restaurant_id String?
+  restaurant    Restaurant? @relation(fields: [restaurant_id], references: [id])
+  date_reserve  DateTime
+  created_at    DateTime    @default(now())
+
+  @@map("tablereserve")
+}
+
+model Restaurant {
+  id             String           @id @default(uuid())
+  name           String
+  price_range    String?
+  address        String
+  phone          String?
+  email          String           @unique
+  open_days      DaysWeek[]
+  password       String
+  close_days     DaysWeek[]
+  opening_times  String
+  closing_times  String
+  photo          String?
+  culinary_types String
+  description    String?
+  pay_methods    PayMethod[]
+  created_at     DateTime         @default(now())
+  review         Review[]
+  Favorite       Favorite[]
+  reserve        Reserve[]
+  available      available[]
+  table          table[]
+  reviews        ReviewResponse[]
+
+  @@map("restaurant")
+}
+
+model CategoryMenu {
+  id   String     @id @default(uuid())
+  name String
+  dish DishMenu[]
+
+  @@map("categorymenu")
+}
+
+model DishMenu {
+  id          String       @id @default(uuid())
+  name        String
+  description String?
+  price       Float
+  available   Boolean?
+  evaluate    Int?
+  urlImage    String?
+  category    CategoryMenu @relation(fields: [category_id], references: [id])
+  category_id String
+
+  @@map("dishmenu")
+}
