@@ -1,3 +1,3 @@
-FROM mcr.microsoft.com/devcontainers/javascript-node:1-18-bookworm
+FROM mcr.microsoft.com/devcontainers/javascript-node:1-20-bookworm
 
 WORKDIR /app

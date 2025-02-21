@@ -8,4 +8,12 @@ export class BcryptService {
       throw new Error(`Error hashing password: ${error}`);
     }
   }
+
+  async comparePassword(password: string, hashedPassword: string): Promise<boolean> {
+    try {
+      return await bcrypt.compare(password, hashedPassword);
+    } catch (error) {
+      throw new Error(`Error comparing passwords: ${error}`);
+    }
+  }
 }
