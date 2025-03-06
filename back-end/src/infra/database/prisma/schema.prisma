@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String       @id @default(uuid())
+  name       String       @unique
+  email      String       @unique
+  password   String
+  phone      String?
+  photo      String?
+  created_at DateTime     @default(now())
+  available  available[]
+  favorite   Favorite[]
+  restaurant Restaurant[]
+  reserve    Reserve[]
+
+  @@map("user")
+}
+
+model Favorite {
+  id            String      @id @default(uuid())
+  user_id       String?
+  restaurant_id String?
+  created_at    DateTime    @default(now())
+  restaurant    Restaurant? @relation(fields: [restaurant_id], references: [id])
+  user          User?       @relation(fields: [user_id], references: [id])
+
+  @@map("favorite")
+}
+
+model Restaurant {
+  id             String       @id @default(uuid())
+  name           String
+  price_range    PriceRange[]
+  address        String
+  phone          String?
+  open_days      DaysWeek[]
+  close_days     DaysWeek[]
+  opening_times  String
+  closing_times  String
+  photo          String?
+  culinary_types String
+  description    String?
+  pay_methods    PayMethod[]
+  user_id        String       @unique
+  created_at     DateTime     @default(now())
+  available      available[]
+  Favorite       Favorite[]
+  user           User         @relation(fields: [user_id], references: [id])
+  table          table[]
+  reserve        Reserve[]
+
+  @@map("restaurant")
+}
+
+model table {
+  id             String      @id @default(uuid())
+  id_restaurant  String?
+  quantities     Int
+  status_reserve Available
+  restaurant     Restaurant? @relation(fields: [id_restaurant], references: [id])
+  reserve        Reserve[]
+
+  @@map("table")
+}
+
+model Reserve {
+  id            String      @id @default(uuid())
+  table_id      String?
+  user_id       String?
+  restaurant_id String?
+  date_reserve  DateTime
+  created_at    DateTime    @default(now())
+  restaurant    Restaurant? @relation(fields: [restaurant_id], references: [id])
+  table         table?      @relation(fields: [table_id], references: [id])
+  user          User?       @relation(fields: [user_id], references: [id])
+
+  @@map("tablereserve")
+}
+
+model available {
+  id            String      @id @default(uuid())
+  user_id       String
+  restaurant_id String?
+  available     Int         @default(0)
+  restaurant    Restaurant? @relation(fields: [restaurant_id], references: [id])
+  user          User        @relation(fields: [user_id], references: [id])
+
+  @@map("available")
+}
+
+model CategoryMenu {
+  id   String     @id @default(uuid())
+  name String
+  dish DishMenu[]
+
+  @@map("categorymenu")
+}
+
+model DishMenu {
+  id          String       @id @default(uuid())
+  name        String
+  description String?
+  price       Float
+  available   Boolean?
+  evaluate    Int?
+  urlImage    String?
+  category_id String
+  category    CategoryMenu @relation(fields: [category_id], references: [id])
+
+  @@map("dishmenu")
+}
+
+enum Available {
+  disponivel
+  reservada
+}
+
+enum PriceRange {
+  gourmet
+  economico
+  luxo
+  normal
+  moderado
+}
+
+enum DaysWeek {
+  domingo
+  segunda
+  terca
+  quarta
+  quinta
+  sexta
+  sabado
+}
+
+enum PayMethod {
+  dinheiro
+  debito
+  credito
+  pix
+}

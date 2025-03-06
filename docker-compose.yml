@@ -1,0 +1,55 @@
+services:
+  backend:
+    build:
+      context: ./back-end
+    ports:
+      - "3333:3333"
+    volumes:
+      - ./back-end:/var/www
+    networks:
+      - reservai
+    # command: ["sh", "-c", "pnpx prisma migrate dev && pnpm run dev"]    
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://p_user:p_password@db:5432/reservai_db
+      JWT_SECRET: wjeyi3geygf6egewfgbf4rjr03jrr8h4r8jr8h6F2i2eeubevfehfbfhbe
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./front-end
+    volumes:
+      - ./front-end:/app
+    ports:
+      - "5173:5173"
+    networks:
+      - reservai
+    restart: unless-stopped
+    # command: ["sh", "-c", "pnpm install && pnpm run dev -- --host"]
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_PASSWORD: p_password
+      POSTGRES_USER: p_user
+      POSTGRES_DB: reservai_db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - reservai
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U p_user -d reservai_db"]
+      interval: 5s
+      retries: 5
+    restart: unless-stopped
+
+networks:
+  reservai:
+    driver: bridge
+
+volumes:
+  postgres-data:

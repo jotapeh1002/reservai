@@ -1,0 +1,19 @@
+FROM node:22-slim
+
+WORKDIR /app
+
+RUN corepack enable && \
+    corepack prepare pnpm@latest --activate
+
+RUN mkdir -p /pnpm && \
+    chmod -R 777 /pnpm
+
+COPY package*.json pnpm-lock.yaml* ./
+
+COPY . .
+
+RUN pnpm install --frozen-lockfile
+
+EXPOSE 5173
+
+CMD ["pnpm", "run", "dev", "--", "--host", "0.0.0.0"]
