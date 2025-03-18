@@ -9,10 +9,10 @@ export class CreateUserController {
 
     async execute(req: Request, res: Response): Promise<void> {
         const userSchema = z.object({
-            name: z.string().min(3),
-            email: z.string().email(),
-            password: z.string().min(6),
-            phone: z.string().optional(),
+            name: z.string().min(3,{message:"Nome muito curto"}),
+            email: z.string().email({message:"Campos inválidos"}),
+            password: z.string().min(6,{message:"Senha muito curta"}),
+            phone: z.string().min(3,{message:"Telefone inválido"}),
             photo: z.string().optional(),
         });
         const parsedData = userSchema.parse(req.body);
@@ -21,13 +21,17 @@ export class CreateUserController {
         try {
             const clientIP = (Array.isArray(req.headers["x-forwarded-for"]) 
             ? req.headers["x-forwarded-for"][0] 
-            : req.headers["x-forwarded-for"]) || req.ip || req.socket.remoteAddress || "0.0.0.0";
+            : req.headers["x-forwarded-for"]) || req.ip
+            || req.socket.remoteAddress || "0.0.0.0";
             const user = new User(name, email, password, phone, photo);
             const token = await this.createUser.execute(user, clientIP);
             res.status(StatusCodes.CREATED).json(token);
         } catch (error: any) {
-            console.error(`${error}`)
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message } );
+            if (error instanceof z.ZodError) {
+                res.status(StatusCodes.BAD_REQUEST).json(error.errors[0]?.message || "Erro ao registrar usuário");  
+                return
+            }
+            res.status(StatusCodes.BAD_REQUEST).json(error?.message || "Erro ao registrar usuário");
         }
     }
 }

@@ -4,6 +4,7 @@ services:
       context: ./back-end
     ports:
       - "3333:3333"
+      - "5555:5555"
     volumes:
       - ./back-end:/var/www
     networks:

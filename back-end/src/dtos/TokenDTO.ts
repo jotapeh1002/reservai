@@ -1,14 +1,11 @@
-import { User } from "../domain/entities/User";
-
 export class JwtPayloadDTO {
-  public readonly id?: string
-  public readonly name: string
-  public readonly email: string
+  public readonly id: string;
+  public readonly name: string;
+  public readonly ip: string;
 
-  constructor(user: User, public readonly ip: string) {
-    this.id = user.id;
-    this.name = user.name;
-    this.email = user.email;
+  constructor(id: string, name: string, ip: string) {
+      this.id = id;
+      this.name = name;
+      this.ip = ip;
   }
 }
-

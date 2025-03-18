@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import { ITokenProvider } from "../../../domain/interfaces/ITokenProvider";
-import { JwtPayload } from "jsonwebtoken";
+import { JwtPayloadDTO } from "../../../dtos/TokenDTO";
 
 export interface AuthRequest extends Request {
-    user?: JwtPayload;
+    user?: JwtPayloadDTO;
 }
 export class AuthToken {
     constructor(private tokenProvider: ITokenProvider) { }
@@ -14,17 +14,15 @@ export class AuthToken {
                 ? req.headers["x-forwarded-for"][0]
                 : req.headers["x-forwarded-for"])
                 || req.ip || req.socket.remoteAddress || "0.0.0.0";
-            const token = req.headers.authorization?.split(" ")[1];
-            const decoded = token ? await this.tokenProvider.verify(token) : null;
+            const token = req.headers.authorization?.split(" ")[1] || '';
 
-            if (!decoded || typeof decoded === "string") throw new Error();
-            if (decoded.ip !== clientIP) throw new Error();
-
-            console.log(decoded);
-            req.user = decoded as JwtPayload;
+            const decoded = await this.tokenProvider.verify(token)
+            const {user} = decoded
+            if (user?.ip !== clientIP ) throw new Error();
+            req.user = new JwtPayloadDTO(user.id,user.name,user.ip);
             next();
-        } catch {
-            res.status(401).json({ error: "Access denied!" });
+        } catch (error: any) {
+            res.status(401).json({access: 'unauthorized',message: error?.message || "Erro ao autenticar usuário"});
         }
     }
 }

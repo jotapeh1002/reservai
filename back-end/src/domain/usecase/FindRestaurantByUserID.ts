@@ -3,8 +3,8 @@ import { IRestaurant } from "../interfaces/IRestaurant";
 
 export class FindRestaurantByUserID {
     constructor(private irestaurant: IRestaurant) {}
-    async execute(id: string): Promise<Restaurant | null> {
-        const restaurants = await this.irestaurant.findRestaurantByUserID(id);
+    async execute(userId: string): Promise<Restaurant | null> {
+        const restaurants = await this.irestaurant.findRestaurantByUserID(userId);
         return restaurants || null
     }
 }

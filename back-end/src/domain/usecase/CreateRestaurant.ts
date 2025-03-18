@@ -12,12 +12,12 @@ export class CreateRestaurant {
     async execute(restaurant: Restaurant): Promise<void> {
 
         const restaurants = await this.irestaurant.findRestaurantByUserID(restaurant.user_id) as Restaurant
-        const restaurantExists = restaurants?.user_id === restaurant.user_id ? true : false
 
-        if (restaurantExists) throw new Error("Restaurant by user already exists");
+        if (restaurants) throw new Error("Restaurante ja existente");
         const userExists = await this.iuser.findById(restaurant.user_id) as User
 
-        if (!userExists) throw new Error("User not found");
+        if (!userExists) throw new Error("Usuario não encontrado");
+        
         await this.irestaurant.createRestaurant(restaurant);
     }
 }

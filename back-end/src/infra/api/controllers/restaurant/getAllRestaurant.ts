@@ -8,10 +8,9 @@ export class GetAllRestaurantController {
 
     async execute(req: Request, res: Response): Promise<void> {
         const querySchema = z.object({
-            page: z.string().optional().default("1").transform(Number).pipe(z.number().min(1)),
-            limit: z.string().optional().default("10").transform((val) => (val === "Infinity" ? Infinity : Number(val))).pipe(z.number().min(10))
+            page: z.string().optional().default("1").transform(Number).pipe(z.number().min(1, { message: "Número inválido" })),
+            limit: z.string().optional().default("10").transform((val) => (val === "Infinity" ? Infinity : Number(val))).pipe(z.number().min(10, { message: "Número inválido" })),
         });
-
         try {
             const { page, limit } = querySchema.parse(req.query);
 
@@ -20,9 +19,10 @@ export class GetAllRestaurantController {
             res.status(StatusCodes.OK).json(restaurant);
         } catch (error: any) {
             if (error instanceof z.ZodError) {
-                res.status(StatusCodes.BAD_REQUEST).json({ error: error.errors });
+                res.status(StatusCodes.BAD_REQUEST).json(error.errors[0]?.message || "Erro ao buscar todos os restaurante");
+                return
             }
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: "Internal server error" });
+            res.status(StatusCodes.BAD_REQUEST).json(error?.message || "Erro ao buscar todos os restaurante");
         }
     }
 }

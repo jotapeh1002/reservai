@@ -13,12 +13,12 @@ export class LoginUser {
   async execute(email: string, password: string, clientIP: string): Promise<string> {
 
     const userExists = await this.iuser.findByEmail(email);
-    if (!userExists) throw new Error("Email or password incorrect");
+    if (!userExists) throw new Error("Email ou senha incorretos");
 
     const passwordMatch = await this.ipasswordHasher.comparePassword( password, userExists?.password );
-    if (!passwordMatch) throw new Error("Email or password incorrect");
+    if (!passwordMatch) throw new Error("Email ou senha incorretos");
 
-    const token = await this.itokenProvider.sign({...userExists, ip: clientIP});
+    const token = await this.itokenProvider.sign(new JwtPayloadDTO(userExists.id||'' ,userExists.name, clientIP));
     return token;
   }
 }
