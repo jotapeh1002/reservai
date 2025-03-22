@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { CreateRestaurant } from "../../../../domain/usecase/CreateRestaurant";
+import { CreateRestaurant } from "../../../../domain/usecase/index";
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 

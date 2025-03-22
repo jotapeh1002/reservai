@@ -3,26 +3,55 @@ import { ITokenProvider } from "../../../domain/interfaces/ITokenProvider";
 import { JwtPayloadDTO } from "../../../dtos/TokenDTO";
 
 export interface AuthRequest extends Request {
-    user?: JwtPayloadDTO;
+  acessToken?: string;
 }
-export class AuthToken {
-    constructor(private tokenProvider: ITokenProvider) { }
 
-    async execute(req: AuthRequest, res: Response, next: NextFunction) {
-        try {
-            const clientIP = (Array.isArray(req.headers["x-forwarded-for"])
-                ? req.headers["x-forwarded-for"][0]
-                : req.headers["x-forwarded-for"])
-                || req.ip || req.socket.remoteAddress || "0.0.0.0";
-            const token = req.headers.authorization?.split(" ")[1] || '';
+export class AuthTokenMiddleware {
+  constructor(private tokenProvider: ITokenProvider) {}
 
-            const decoded = await this.tokenProvider.verify(token)
-            const {user} = decoded
-            if (user?.ip !== clientIP ) throw new Error();
-            req.user = new JwtPayloadDTO(user.id,user.name,user.ip);
-            next();
-        } catch (error: any) {
-            res.status(401).json({access: 'unauthorized',message: error?.message || "Erro ao autenticar usuário"});
-        }
+  async execute(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const clientIP =
+        (Array.isArray(req.headers["x-forwarded-for"]) ? req.headers["x-forwarded-for"][0]: req.headers["x-forwarded-for"])
+        || req.ip || req.socket.remoteAddress || "0.0.0.0";
+
+      const userAgent = req.headers["user-agent"];
+      const accessToken = req.headers.authorization?.split(" ")[1] || "";
+      let newAccessToken;
+
+      try {
+        const decoded = await this.tokenProvider.verify(accessToken);
+
+        if (decoded.userAgent !== userAgent) throw new Error("Invalid user agent");
+        if (decoded.ip !== clientIP) throw new Error("Invalid IP address");
+
+      } catch (error) {
+        const refreshToken = req.cookies.AuthRefreshToken;
+        if (!refreshToken) throw new Error("No refresh token provided");
+
+        const refreshDecoded = await this.tokenProvider.verifyRefreshToken(refreshToken);
+
+        if (refreshDecoded.userAgent !== userAgent) throw new Error("Invalid user agent");
+        if (refreshDecoded.ip !== clientIP) throw new Error("Invalid IP address");
+
+        console.log("Refresh token valido", refreshDecoded);
+
+        newAccessToken = await this.tokenProvider.sign({
+          id: refreshDecoded.id,
+          name: refreshDecoded.name,
+          ip: refreshDecoded.ip,
+          userAgent: refreshDecoded.userAgent
+        });
+
+        console.log("Novo token gerado", newAccessToken);
+      }
+      req.acessToken = newAccessToken || undefined;
+      next();
+    } catch (error: any) {
+      res.status(401).json({
+        access: "unauthorized",
+        message: error?.message || "Erro ao autenticar usuário",
+      });
     }
+  }
 }

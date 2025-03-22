@@ -2,7 +2,7 @@
 CREATE TYPE "Available" AS ENUM ('disponivel', 'reservada');
 
 -- CreateEnum
-CREATE TYPE "priceRange" AS ENUM ('gourmet', 'economico', 'luxo', 'normal', 'moderado');
+CREATE TYPE "PriceRange" AS ENUM ('gourmet', 'economico', 'luxo', 'normal', 'moderado');
 
 -- CreateEnum
 CREATE TYPE "DaysWeek" AS ENUM ('domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado');
@@ -24,6 +24,21 @@ CREATE TABLE "user" (
 );
 
 -- CreateTable
+CREATE TABLE "refreshtokens" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "refreshToken" TEXT NOT NULL,
+    "userAgent" TEXT NOT NULL,
+    "ipAddress" TEXT NOT NULL,
+    "expire_Time" TIMESTAMP(3) NOT NULL,
+    "revoked" BOOLEAN NOT NULL DEFAULT false,
+    "revoked_Time" TIMESTAMP(3),
+    "created_Time" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "refreshtokens_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "favorite" (
     "id" TEXT NOT NULL,
     "user_id" TEXT,
@@ -37,7 +52,7 @@ CREATE TABLE "favorite" (
 CREATE TABLE "restaurant" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "price_range" "priceRange"[],
+    "price_range" "PriceRange"[],
     "address" TEXT NOT NULL,
     "phone" TEXT,
     "open_days" "DaysWeek"[],
@@ -48,7 +63,7 @@ CREATE TABLE "restaurant" (
     "culinary_types" TEXT NOT NULL,
     "description" TEXT,
     "pay_methods" "PayMethod"[],
-    "user_id" TEXT,
+    "user_id" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "restaurant_pkey" PRIMARY KEY ("id")
@@ -114,17 +129,29 @@ CREATE UNIQUE INDEX "user_name_key" ON "user"("name");
 -- CreateIndex
 CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "refreshtokens_refreshToken_key" ON "refreshtokens"("refreshToken");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "restaurant_user_id_key" ON "restaurant"("user_id");
+
 -- AddForeignKey
-ALTER TABLE "favorite" ADD CONSTRAINT "favorite_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "refreshtokens" ADD CONSTRAINT "refreshtokens_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "favorite" ADD CONSTRAINT "favorite_restaurant_id_fkey" FOREIGN KEY ("restaurant_id") REFERENCES "restaurant"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "restaurant" ADD CONSTRAINT "restaurant_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "favorite" ADD CONSTRAINT "favorite_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "restaurant" ADD CONSTRAINT "restaurant_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "table" ADD CONSTRAINT "table_id_restaurant_fkey" FOREIGN KEY ("id_restaurant") REFERENCES "restaurant"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "tablereserve" ADD CONSTRAINT "tablereserve_restaurant_id_fkey" FOREIGN KEY ("restaurant_id") REFERENCES "restaurant"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "tablereserve" ADD CONSTRAINT "tablereserve_table_id_fkey" FOREIGN KEY ("table_id") REFERENCES "table"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -133,13 +160,10 @@ ALTER TABLE "tablereserve" ADD CONSTRAINT "tablereserve_table_id_fkey" FOREIGN K
 ALTER TABLE "tablereserve" ADD CONSTRAINT "tablereserve_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "tablereserve" ADD CONSTRAINT "tablereserve_restaurant_id_fkey" FOREIGN KEY ("restaurant_id") REFERENCES "restaurant"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "available" ADD CONSTRAINT "available_restaurant_id_fkey" FOREIGN KEY ("restaurant_id") REFERENCES "restaurant"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "available" ADD CONSTRAINT "available_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "available" ADD CONSTRAINT "available_restaurant_id_fkey" FOREIGN KEY ("restaurant_id") REFERENCES "restaurant"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "dishmenu" ADD CONSTRAINT "dishmenu_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "categorymenu"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

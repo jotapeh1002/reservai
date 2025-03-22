@@ -1,4 +1,4 @@
-import { Restaurant } from "../entities/Restaurant";
+import { Restaurant } from "../entities/index";
 
 export interface IRestaurant {
   createRestaurant(Restauran: Restaurant): Promise<Restaurant>;

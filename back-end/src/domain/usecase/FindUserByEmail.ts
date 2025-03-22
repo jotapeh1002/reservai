@@ -1,5 +1,5 @@
-import { User } from "../entities/User";
-import { IUser } from "../interfaces/IUser";
+import { User } from "../entities/index";
+import { IUser } from "../interfaces/index";
 
 export class FindByEmail {
     constructor(private iuser: IUser) { }

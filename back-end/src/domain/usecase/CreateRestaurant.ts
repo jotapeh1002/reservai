@@ -1,7 +1,5 @@
-import { IRestaurant } from "../interfaces/IRestaurant";
-import { Restaurant } from "../entities/Restaurant";
-import { IUser } from "../interfaces/IUser";
-import { User } from "../entities/User";
+import { IRestaurant, IUser } from "../interfaces/index";
+import { Restaurant, User } from "../entities/index";
 
 export class CreateRestaurant {
 

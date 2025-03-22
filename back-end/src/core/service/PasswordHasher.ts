@@ -1,4 +1,4 @@
-import { IPasswordHasher } from "../../domain/interfaces/IPasswordHasher";
+import { IPasswordHasher } from "../../domain/interfaces/index";
 import bcrypt from "bcryptjs";
 
 export class PasswordHasher implements IPasswordHasher {
@@ -9,7 +9,6 @@ export class PasswordHasher implements IPasswordHasher {
       throw new Error(`Error hashing password: ${error}`);
     }
   }
-
   async comparePassword(
     password: string,
     hashedPassword: string

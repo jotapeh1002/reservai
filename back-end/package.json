@@ -12,6 +12,7 @@
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.8",
     "@types/jest": "^29.5.14",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.13.4",
@@ -32,6 +33,7 @@
     "argon2": "^0.41.1",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
@@ -42,5 +44,5 @@
   "prisma": {
     "schema": "./src/infra/database/prisma/schema.prisma"
   },
-  "packageManager": "pnpm@10.5.2+sha512.da9dc28cd3ff40d0592188235ab25d3202add8a207afbedc682220e4a0029ffbff4562102b9e6e46b4e3f9e8bd53e6d05de48544b0c57d4b0179e22c76d1199b"
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

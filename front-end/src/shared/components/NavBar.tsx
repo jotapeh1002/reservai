@@ -1,18 +1,31 @@
 import { FaShop, FaUser } from 'react-icons/fa6';
 import { IoIosNotifications, IoIosSearch } from 'react-icons/io';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { ModalLogin } from './ModalLogin';
 import { useState } from 'react';
+import { AuthToken } from '../services/api/auth/AuthToken';
 
 export const NavBar = () => {
-  const navigate = useNavigate();
-  const [open,setIsOpen] = useState(false)
+  const [open, setIsOpen] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  const verifyToken = () => {
-    const value = localStorage.getItem('Token') ? true : false;
-    setIsOpen(e=>!e)
-    return value
+  if (loading){console.log("ignore e so pra sair o erro do loading kkkkkkk")}
+
+
+
+
+
+  const verifyToken = async () => {
+    const token = await AuthToken();
+    if (token == 'authorized') setIsOpen(true);
+    else if (token !== 'unauthorized') alert('Você precisa estar logado');
+    alert(token)
+    setLoading(false);
   };
+
+
+
+
 
   return (
     <div className="w-full sm:px-8 px-5 lg:px-10 xl:px-24 pt-5 md:py-2 md:px20 bg-white/70 h-auto lg:h-[78px] shadow-zinc-300 shadow-lg flex flex-wrap items-center justify-between">
@@ -34,7 +47,7 @@ export const NavBar = () => {
       </div>
       <div className="flex items-center gap-4 order-2 md:order-3">
         <div
-          onClick={() => verifyToken() && navigate('/0')}
+          onClick={() => verifyToken()}
           className="flex items-center gap-2 px-3 py-3 lg:px-4 lg:py-2 border-2 rounded-full cursor-pointer text-orange-400
          hover:bg-orange-500/80 hover:text-white border-orange-300 hover:border-orange-400 transition-all duration-300"
         >
@@ -42,19 +55,21 @@ export const NavBar = () => {
           <span className="hidden lg:block">Meu Negócio</span>
         </div>
         <div
-          onClick={() => verifyToken() && navigate('/0')}
+          onClick={() => verifyToken()}
           className="rounded-full p-2.5 cursor-pointer duration-200 text-orange-400 shadow-sm hover:bg-orange-500/80 hover:text-white transition-all"
         >
           <IoIosNotifications size={23} />
         </div>
         <div
-          onClick={() => verifyToken() && navigate('/0')}
+          onClick={() => verifyToken()}
           className="rounded-full p-3 cursor-pointer duration-200 hover:bg-orange-500/80 text-orange-400 shadow-sm hover:text-white transition-all"
         >
           <FaUser size={17} />
         </div>
       </div>
-      <ModalLogin onClose={()=>setIsOpen(e=>!e)} open={open} />
+      <ModalLogin onClose={() => setIsOpen((e) => !e)} open={open} />
     </div>
   );
 };
+
+

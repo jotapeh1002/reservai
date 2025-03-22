@@ -1,18 +1,17 @@
-FROM node:22-alpine
+FROM node:18-alpine
 
 WORKDIR /var/www
 
-RUN corepack enable && \ 
-    corepack prepare pnpm@latest --activate
-
-COPY package*.json pnpm-lock.yaml ./
+COPY package*.json yarn.lock ./
 
 COPY . .
 
-RUN pnpm install --frozen-lockfile
-
-RUN pnpx prisma generate
+RUN yarn install 
 
 EXPOSE 3333
 
-CMD ["sh", "-c", "pnpx prisma migrate dev && pnpm run dev"]
+RUN yarn prisma generate
+
+ENTRYPOINT ["sh", "-c", "yarn prisma migrate dev --name $(date +%Y%m%d%H%M%S) && yarn dev"]
+
+

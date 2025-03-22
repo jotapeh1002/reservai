@@ -1,19 +1,9 @@
-import { Router } from "express";
-import { LoginController } from "../controllers/user/Login";
-import { LoginUser } from "../../../domain/usecase/LoginUser";
-import { PasswordHasher } from "../../../core/service/PasswordHasher";
-import { TokenProvider } from "../../../core/service/TokenProvider";
-import { UserRepository } from "../../database/repositories/User.repositories";
+import { Request, Response, Router } from "express";
+import { LoginController,CreateRestaurantController, FindByUserIDController, GetAllRestaurantController,CreateUserController} from "../controllers/index";
+import { LoginUser, CreateUser ,CreateRestaurant,GetAllRestaurant, FindRestaurantByUserID} from "../../../domain/usecase/index";
+import { PasswordHasher, TokenProvider} from "../../../core/service/index";
+import { UserRepository, RestaurantRepository } from "../../database/repositories/index";
 import { PrismaClient } from "@prisma/client";
-import { CreateUser } from "../../../domain/usecase/CreateUser";
-import { CreateUserController } from "../controllers/user/CreateUser";
-import { CreateRestaurant } from "../../../domain/usecase/CreateRestaurant";
-import { RestaurantRepository } from "../../database/repositories/Restaurant.repositories";
-import { CreateRestaurantController } from "../controllers/restaurant/CreateRestaurant";
-import { GetAllRestaurant } from "../../../domain/usecase/GetAllRestaurant";
-import { GetAllRestaurantController } from "../controllers/restaurant/getAllRestaurant";
-import { FindByUserIDController } from "../controllers/restaurant/FindByUserID";
-import { FindRestaurantByUserID } from "../../../domain/usecase/FindRestaurantByUserID";
 
 export const publicRoutes = Router();
 
@@ -40,5 +30,6 @@ const getAllRestaurantsController = new GetAllRestaurantController(getAllRestaur
 publicRoutes.post("/login", loginController.execute.bind(loginController));
 publicRoutes.post("/register", createUserController.execute.bind(createUserController));
 publicRoutes.post("/createrestaurant", createRestaurantController.execute.bind(createRestaurantController));
+publicRoutes.get("/teste/api", (req:Request,res:Response) => { res.status(200).json({message: "Api rodando"}) });
 publicRoutes.get("/findrestaurantbyuserid/:userid", findRestaurantByUserIdController.execute.bind(findRestaurantByUserIdController));
 publicRoutes.get("/getallrestaurants", getAllRestaurantsController.execute.bind(getAllRestaurantsController));

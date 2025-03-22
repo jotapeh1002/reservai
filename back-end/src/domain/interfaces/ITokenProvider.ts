@@ -1,6 +1,9 @@
-import { JwtPayloadDTO } from "../../dtos/TokenDTO";
+import { JwtPayload } from "jsonwebtoken";
 
 export interface ITokenProvider {
-  sign(payload: JwtPayloadDTO): Promise<string>;
-  verify(token: string): Promise<{ user?: JwtPayloadDTO;}>;
+  sign(payload: JwtPayload): Promise<string>;
+  signRefreshToken(payload: JwtPayload): Promise<string>;
+  verify(token: string): Promise<JwtPayload>;
+  verifyRefreshToken(token:string): Promise<JwtPayload>
+  decode(token: string): Promise<JwtPayload>
 }

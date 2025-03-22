@@ -1,5 +1,5 @@
-import { Restaurant } from "../entities/Restaurant";
-import { IRestaurant } from "../interfaces/IRestaurant";
+import { Restaurant } from "../entities/index";
+import { IRestaurant } from "../interfaces/index";
 
 export class FindRestaurantByID {
     constructor(private irestaurant: IRestaurant) { }

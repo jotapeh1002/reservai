@@ -17,6 +17,8 @@ export const Register: React.FC<IRegister> = ({ handleLogin }) => {
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+  // alert(email)
+
   const handleregister = ()=> {
     if (!password || !email || !name || !phone) setError('Campos nao podem estar vazios');
     else if (!emailRegex.test(email)) setError('Campos invalidos');

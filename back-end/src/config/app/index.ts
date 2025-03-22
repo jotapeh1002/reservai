@@ -1,20 +1,24 @@
 import express from "express";
-import cors from "cors"
-import { publicRoutes } from "../../infra/api/routes/public.routes";
-import { privateRoutes } from "../../infra/api/routes/private.routes";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import {privateRoutes,publicRoutes} from "../../infra/api/routes"
 
-export const serverApp = express()
+export const serverApp = express();
 
-serverApp.use(cors({
-    origin: "*",
+serverApp.use(
+  cors({
+    origin: "http://localhost:5173",
     methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true 
-}))
-
-serverApp.use(express.json())
+    allowedHeaders: ["Content-Type", "Authorization", "User-Agent"],
+    credentials: true,
+  })
+);
 
 serverApp.use(express.urlencoded({ extended: true }));
 
-serverApp.use(publicRoutes)
-serverApp.use(privateRoutes)
+serverApp.use(cookieParser());
+
+serverApp.use(express.json());
+
+serverApp.use(privateRoutes);
+serverApp.use(publicRoutes);

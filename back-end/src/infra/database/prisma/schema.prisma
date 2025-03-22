@@ -8,19 +8,35 @@ datasource db {
 }
 
 model User {
-  id         String       @id @default(uuid())
-  name       String       @unique
-  email      String       @unique
-  password   String
-  phone      String?
-  photo      String?
-  created_at DateTime     @default(now())
-  available  available[]
-  favorite   Favorite[]
-  restaurant Restaurant[]
-  reserve    Reserve[]
+  id            String          @id @default(uuid())
+  name          String          @unique
+  email         String          @unique
+  password      String
+  phone         String?
+  photo         String?
+  created_at    DateTime        @default(now())
+  available     available[]
+  favorite      Favorite[]
+  restaurant    Restaurant[]
+  reserve       Reserve[]
+  refreshTokens RefreshTokens[]
 
   @@map("user")
+}
+
+model RefreshTokens {
+  id           String    @id @default(uuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id])
+  refreshToken String    @unique
+  userAgent    String
+  ipAddress    String
+  expire_at  DateTime
+  revoked      Boolean   @default(false)
+  revoked_at DateTime?
+  created_at DateTime  @default(now())
+
+  @@map("refreshtokens")
 }
 
 model Favorite {
