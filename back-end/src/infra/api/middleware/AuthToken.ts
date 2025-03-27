@@ -1,57 +1,44 @@
 import { NextFunction, Request, Response } from "express";
-import { ITokenProvider } from "../../../domain/interfaces/ITokenProvider";
-import { JwtPayloadDTO } from "../../../dtos/TokenDTO";
+import { ITokenProvider,IUser  } from "../../../domain/interfaces/index";
+import { ErrorApi } from "../../../error/ErrorApi";
 
 export interface AuthRequest extends Request {
   acessToken?: string;
 }
-
 export class AuthTokenMiddleware {
-  constructor(private tokenProvider: ITokenProvider) {}
+  constructor(
+    private tokenProvider: ITokenProvider,
+    private user: IUser
+  ) {}
 
   async execute(req: AuthRequest, res: Response, next: NextFunction) {
-    try {
-      const clientIP =
-        (Array.isArray(req.headers["x-forwarded-for"]) ? req.headers["x-forwarded-for"][0]: req.headers["x-forwarded-for"])
-        || req.ip || req.socket.remoteAddress || "0.0.0.0";
+    
+    const refreshToken = req.cookies.AuthRefreshToken;
+    if (!refreshToken) throw new ErrorApi("erro ao capturar refresh token",401);
+    
+    const userAgent = req.headers["user-agent"];
 
-      const userAgent = req.headers["user-agent"];
-      const accessToken = req.headers.authorization?.split(" ")[1] || "";
-      let newAccessToken;
+    const refreshDecoded = await this.tokenProvider.verifyRefreshToken(refreshToken); 
+    if (refreshDecoded.userAgent !== userAgent) throw new ErrorApi("Refresh token invalido",401);
 
-      try {
-        const decoded = await this.tokenProvider.verify(accessToken);
+    const refreshTokenDB = await this.user.getRefreshTokenByRefreshToken(refreshToken);
+    if (!refreshTokenDB) throw new ErrorApi("Refresh token invalido",401);
 
-        if (decoded.userAgent !== userAgent) throw new Error("Invalid user agent");
-        if (decoded.ip !== clientIP) throw new Error("Invalid IP address");
+    const refreshDecodedDB = await this.tokenProvider.verifyRefreshToken(refreshTokenDB.refreshToken);
 
-      } catch (error) {
-        const refreshToken = req.cookies.AuthRefreshToken;
-        if (!refreshToken) throw new Error("No refresh token provided");
+    const isTokenConsistent = refreshDecoded.id === refreshTokenDB.userId 
+    && refreshDecodedDB.name === refreshDecoded.name && refreshTokenDB.revoked === false 
+    && refreshDecoded.userAgent === userAgent;
 
-        const refreshDecoded = await this.tokenProvider.verifyRefreshToken(refreshToken);
+    if (!isTokenConsistent)  throw new ErrorApi("Refresh Token inconsistente",401);
+    
+    const accessToken = req.headers.authorization?.split(" ")[1] || "";
+    if (!accessToken) throw new ErrorApi("Erro ao capturar access token",401);
 
-        if (refreshDecoded.userAgent !== userAgent) throw new Error("Invalid user agent");
-        if (refreshDecoded.ip !== clientIP) throw new Error("Invalid IP address");
+    const decoded = await this.tokenProvider.verify(accessToken); 
+    if (decoded.userAgent !== userAgent || decoded.id !== refreshDecoded.id) throw new Error("Invalid access token");
 
-        console.log("Refresh token valido", refreshDecoded);
-
-        newAccessToken = await this.tokenProvider.sign({
-          id: refreshDecoded.id,
-          name: refreshDecoded.name,
-          ip: refreshDecoded.ip,
-          userAgent: refreshDecoded.userAgent
-        });
-
-        console.log("Novo token gerado", newAccessToken);
-      }
-      req.acessToken = newAccessToken || undefined;
-      next();
-    } catch (error: any) {
-      res.status(401).json({
-        access: "unauthorized",
-        message: error?.message || "Erro ao autenticar usuário",
-      });
-    }
+    req.acessToken = accessToken
+    next();
   }
 }

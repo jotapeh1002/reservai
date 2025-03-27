@@ -1,9 +1,11 @@
 import { Request, Response, Router } from "express";
-import { LoginController,CreateRestaurantController, FindByUserIDController, GetAllRestaurantController,CreateUserController} from "../controllers/index";
+import { LoginController,CreateRestaurantController,
+    FindByUserIDController, GetAllRestaurantController,
+    CreateUserController,AuthRefreshTokenController } from "../controllers/index";
 import { LoginUser, CreateUser ,CreateRestaurant,GetAllRestaurant, FindRestaurantByUserID} from "../../../domain/usecase/index";
 import { PasswordHasher, TokenProvider} from "../../../core/service/index";
 import { UserRepository, RestaurantRepository } from "../../database/repositories/index";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client"; 
 
 export const publicRoutes = Router();
 
@@ -27,9 +29,13 @@ const findRestaurantByUserIdController = new FindByUserIDController(findRestaura
 const getAllRestaurants = new GetAllRestaurant(restaurantRepository);
 const getAllRestaurantsController = new GetAllRestaurantController(getAllRestaurants);
 
+const authRefreshToken = new AuthRefreshTokenController(tokenProvider, userRepository);
+
+
 publicRoutes.post("/login", loginController.execute.bind(loginController));
+publicRoutes.post("/refreshtoken",authRefreshToken.execute.bind(authRefreshToken));
 publicRoutes.post("/register", createUserController.execute.bind(createUserController));
 publicRoutes.post("/createrestaurant", createRestaurantController.execute.bind(createRestaurantController));
+publicRoutes.post("/getallrestaurants", getAllRestaurantsController.execute.bind(getAllRestaurantsController));
 publicRoutes.get("/teste/api", (req:Request,res:Response) => { res.status(200).json({message: "Api rodando"}) });
-publicRoutes.get("/findrestaurantbyuserid/:userid", findRestaurantByUserIdController.execute.bind(findRestaurantByUserIdController));
-publicRoutes.get("/getallrestaurants", getAllRestaurantsController.execute.bind(getAllRestaurantsController));
+publicRoutes.post("/findrestaurantbyuserid/:userid", findRestaurantByUserIdController.execute.bind(findRestaurantByUserIdController));

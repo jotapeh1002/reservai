@@ -5,5 +5,4 @@ export interface ITokenProvider {
   signRefreshToken(payload: JwtPayload): Promise<string>;
   verify(token: string): Promise<JwtPayload>;
   verifyRefreshToken(token:string): Promise<JwtPayload>
-  decode(token: string): Promise<JwtPayload>
 }

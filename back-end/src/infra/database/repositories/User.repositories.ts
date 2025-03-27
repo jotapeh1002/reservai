@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { IUser } from "../../../domain/interfaces/index";
-import { User } from "../../../domain/entities/index";
+import { RefreshTokens, User } from "../../../domain/entities/index";
 
 export class UserRepository implements IUser {
   constructor(private prisma: PrismaClient) {}
@@ -10,7 +10,7 @@ export class UserRepository implements IUser {
       where: { email },
     });
   }
-  async createUser(user: User): Promise<User> {
+  async createUser(user:User): Promise<User> {
     return await this.prisma.user.create({
       data: user,
     });
@@ -25,26 +25,28 @@ export class UserRepository implements IUser {
       where: { id },
     });
   }
-  async saveRefreshTokens(
-    userId: string,
-    refreshToken: string,
-    userAgent: string,
-    ipAddress: string,
-    expire_at: Date,
-    revoked: boolean = false
-  ): Promise<void> {
-    const revoked_at = revoked == true ? new Date() : null;
-    await this.prisma.refreshTokens.create({
+  async saveRefreshTokens( userId: string,refreshToken: string, userAgent: string,expire_at: Date ): Promise<RefreshTokens> {
+    return await this.prisma.refreshTokens.create({
       data: {
-        userId,
-        refreshToken,
-        userAgent,
-        ipAddress,
-        expire_at,
-        revoked,
-        revoked_at,
-        created_at: new Date(),
+        userId: userId,
+        refreshToken: refreshToken,
+        userAgent: userAgent,
+        expire_at: expire_at
       },
+    });
+  }
+  async revokedRefreshToken(userId: string,revoked: boolean, userAgent: string): Promise<RefreshTokens[]|RefreshTokens> {
+    return await this.prisma.refreshTokens.updateManyAndReturn({
+      where: { userAgent: userAgent, userId: userId },
+      data: {
+        revoked: revoked,
+        revoked_at: new Date(),
+      },
+    });    
+  }  
+  async getRefreshTokenByRefreshToken(refreshToken: string): Promise<RefreshTokens | null> {
+    return await this.prisma.refreshTokens.findUnique({
+      where: { refreshToken: refreshToken },
     });
   }
 }

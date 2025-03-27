@@ -1,4 +1,4 @@
-import { User } from "../entities/index.js";
+import { RefreshTokens, User } from "../entities/index.js";
 
 export interface IUser {
   findByEmail(email: string): Promise<User | null>;
@@ -9,9 +9,12 @@ export interface IUser {
     userId: string,
     refreshToken: string,
     userAgent: string,
-    ipAddress: string,
-    expire_at: Date,
-    revoked?: boolean,
-    revoked_at?: Date,
-  ): Promise<void>;
+    expire_at: Date
+  ): Promise<RefreshTokens>;
+  revokedRefreshToken(
+    userId: string,
+    revoked: boolean,
+    userAgent: string
+  ): Promise<RefreshTokens[]|RefreshTokens>;
+  getRefreshTokenByRefreshToken(refreshToken: string): Promise<RefreshTokens | null>;
 }

@@ -1,5 +1,6 @@
 import { IRestaurant, IUser } from "../interfaces/index";
 import { Restaurant, User } from "../entities/index";
+import { ErrorApi } from "../../error/ErrorApi";
 
 export class CreateRestaurant {
 
@@ -11,10 +12,10 @@ export class CreateRestaurant {
 
         const restaurants = await this.irestaurant.findRestaurantByUserID(restaurant.user_id) as Restaurant
 
-        if (restaurants) throw new Error("Restaurante ja existente");
+        if (restaurants) throw new ErrorApi("Restaurante ja existente",400);
         const userExists = await this.iuser.findById(restaurant.user_id) as User
 
-        if (!userExists) throw new Error("Usuario não encontrado");
+        if (!userExists) throw new ErrorApi("Usuario não encontrado",404);
         
         await this.irestaurant.createRestaurant(restaurant);
     }

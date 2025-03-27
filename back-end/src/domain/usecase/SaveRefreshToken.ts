@@ -1,9 +1,15 @@
 import { IUser } from "../interfaces/index";
 
+interface IRefreshToken {
+    userId: string;
+    refreshToken: string;
+    userAgent: string;
+    expire_at: Date;
+}
+
 export class GetRefreshToken {
     constructor(private iuser: IUser) { }
-
-    execute( userId: string, refreshToken: string, userAgent: string, ipAddress: string, expire_at: Date, revoked?: boolean, revoked_at?: Date) {
-        this.iuser.saveRefreshTokens(userId, refreshToken, userAgent, ipAddress, expire_at, revoked, revoked_at);
+    execute({userId, refreshToken, userAgent, expire_at}: IRefreshToken) {
+        this.iuser.saveRefreshTokens(userId, refreshToken, userAgent, expire_at);
     }
 }

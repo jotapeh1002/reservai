@@ -16,10 +16,7 @@ export const NavBar = () => {
 
 
   const verifyToken = async () => {
-    const token = await AuthToken();
-    if (token == 'authorized') setIsOpen(true);
-    else if (token !== 'unauthorized') alert('Você precisa estar logado');
-    alert(token)
+    if (true) setIsOpen(true);
     setLoading(false);
   };
 
